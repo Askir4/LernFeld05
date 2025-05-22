@@ -1,0 +1,94 @@
+@startuml Klassendiagramm
+
+' Farbdefinitionen
+skinparam class {
+  BackgroundColor #f0f8ff
+  BorderColor #2c3e50
+  ArrowColor #2c3e50
+}
+skinparam stereotypeCBackgroundColor #a9dcdf
+skinparam stereotypeABackgroundColor #c45e5e
+skinparam note {
+  BackgroundColor #ffffcc
+  BorderColor #2c3e50
+}
+
+' Datenbankverbindung
+class DbConnectionPool {
+  - {static} _instance: DbConnectionPool
+  - connections: List
+  - max_connections: int
+  + {static} get_instance(): DbConnectionPool
+  + get_connection(): Connection
+  + release_connection(connection: Connection): void
+}
+
+' Hilfsfunktionen für Datenbankverbindung
+note right of DbConnectionPool
+  Singleton-Pattern für Verbindungspool
+end note
+
+' Datenklassen
+class Benutzer {
+  - name: str
+  - passwort: bytes/str
+  + get_passwort_hex(): str
+}
+
+class Fahrzeug {
+  - id: int
+  - marke: str
+  - modell: str
+  - baujahr: int
+  - wert: int
+  - kilometerstand: int
+  - farbe: str
+  + beschreibung(): str
+}
+
+' GUI-Klassen
+class LoginApp {
+  - root: Tk
+  - username_var: StringVar
+  - password_var: StringVar
+  - login_attempts: int
+  - colors: Dict
+  - info_label: Label
+  + __init__(root: Tk)
+  + zeige_fehler(nachricht: str): void
+  + login(): void
+  + reset_login_attempts(): void
+  + oeffne_hauptanwendung(benutzername: str): void
+}
+
+class AutohausApp {
+  - root: Tk
+  - benutzername: str
+  - fahrzeuge: List[Fahrzeug]
+  - edit_mode: bool
+  - current_fahrzeug: Fahrzeug
+  - search_var: StringVar
+  - treeview: Treeview
+  - colors: Dict
+  - dark_mode: bool
+  - input_fields: Dict
+  + __init__(root: Tk, benutzername: str)
+  + setup_shortcuts(): void
+  + lade_daten(suchbegriff: str): void
+  + fahrzeug_hinzufuegen(): void
+  + fahrzeug_bearbeiten(): void
+  + fahrzeug_loeschen(): void
+  + set_edit_mode(fahrzeug: Fahrzeug): void
+  + validate_input(): Optional[Fahrzeug]
+  + toggle_dark_mode(): void
+  + logout(): void
+  + update_status(message: str): void
+}
+
+' Beziehungen
+DbConnectionPool <-- AutohausApp: benutzt >
+Benutzer <-- LoginApp: authentifiziert >
+LoginApp --> AutohausApp: öffnet >
+AutohausApp --> Fahrzeug: verwaltet >
+
+@enduml

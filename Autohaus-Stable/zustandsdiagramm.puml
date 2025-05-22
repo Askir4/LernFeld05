@@ -1,0 +1,64 @@
+@startuml Zustandsdiagramm
+
+' Farbdefinitionen
+skinparam state {
+  BackgroundColor #f0f8ff
+  BorderColor #2c3e50
+  StartColor #a9dcdf
+  EndColor #c45e5e
+  ArrowColor #2c3e50
+}
+
+[*] --> NichtAngemeldet
+
+state NichtAngemeldet {
+  [*] --> LoginVersuche
+  LoginVersuche --> LoginVersuche : Ungültige Anmeldedaten
+  LoginVersuche --> [*] : Max. Versuche überschritten
+}
+
+NichtAngemeldet --> Hauptanwendung : Erfolgreiche Anmeldung
+
+state Hauptanwendung {
+  [*] --> Übersichtsmodus
+  
+  state Übersichtsmodus {
+    [*] --> DatenAnzeigen
+    DatenAnzeigen --> DatenFiltern : Suchbegriff eingeben
+    DatenFiltern --> DatenAnzeigen : Filter löschen
+  }
+  
+  state Bearbeitungsmodus {
+    [*] --> FahrzeugBearbeiten
+    FahrzeugBearbeiten --> EingabenValidieren : Speichern
+    EingabenValidieren --> FahrzeugBearbeiten : Ungültige Eingaben
+  }
+  
+  Übersichtsmodus --> Bearbeitungsmodus : Fahrzeug auswählen + Bearbeiten
+  Bearbeitungsmodus --> Übersichtsmodus : Abbrechen
+  Bearbeitungsmodus --> Übersichtsmodus : Speichern + Gültige Eingaben
+  
+  state Neuzustand {
+    [*] --> NeueFahrzeugdaten
+    NeueFahrzeugdaten --> EingabenValidieren : Speichern
+    EingabenValidieren --> NeueFahrzeugdaten : Ungültige Eingaben
+  }
+  
+  Übersichtsmodus --> Neuzustand : Neues Fahrzeug
+  Neuzustand --> Übersichtsmodus : Abbrechen
+  Neuzustand --> Übersichtsmodus : Speichern + Gültige Eingaben
+  
+  Übersichtsmodus --> DatenImportExport : Import/Export wählen
+  DatenImportExport --> Übersichtsmodus : Import/Export abgeschlossen
+}
+
+state DatenImportExport {
+  [*] --> DateiAuswahl
+  DateiAuswahl --> DatenVerarbeitung : Datei gewählt
+  DatenVerarbeitung --> [*] : Abgeschlossen
+}
+
+Hauptanwendung --> NichtAngemeldet : Abmelden
+Hauptanwendung --> [*] : Anwendung schließen
+
+@enduml
