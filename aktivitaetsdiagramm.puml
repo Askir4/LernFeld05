@@ -1,0 +1,80 @@
+@startuml Aktivitätsdiagramm
+
+' Farbdefinitionen
+skinparam activity {
+  BackgroundColor #f0f8ff
+  BorderColor #2c3e50
+  StartColor #a9dcdf
+  EndColor #c45e5e
+  ArrowColor #2c3e50
+}
+
+start
+:Benutzer meldet sich an;
+
+if (Anmeldung erfolgreich?) then (ja)
+  :Öffne Hauptanwendung;
+  :Lade Fahrzeugdaten aus Datenbank;
+  
+  repeat
+    fork
+      :Fahrzeug suchen;
+    fork again
+      :Neues Fahrzeug hinzufügen;
+      :Fahrzeugdaten eingeben;
+      if (Eingaben gültig?) then (ja)
+        :Fahrzeug in Datenbank speichern;
+        :Fahrzeugliste aktualisieren;
+      else (nein)
+        :Zeige Fehlermeldung;
+      endif
+    fork again
+      :Fahrzeug in Liste auswählen;
+      fork
+        :Fahrzeug bearbeiten;
+        :Daten ändern;
+        if (Eingaben gültig?) then (ja)
+          :Fahrzeug in Datenbank aktualisieren;
+          :Fahrzeugliste aktualisieren;
+        else (nein)
+          :Zeige Fehlermeldung;
+        endif
+      fork again
+        :Fahrzeug löschen;
+        if (Löschen bestätigt?) then (ja)
+          :Fahrzeug aus Datenbank entfernen;
+          :Fahrzeugliste aktualisieren;
+        else (nein)
+          :Vorgang abbrechen;
+        endif
+      end fork
+    fork again
+      :Import/Export;
+      fork
+        :Daten aus JSON importieren;
+        :Fahrzeugliste aktualisieren;
+      fork again
+        :Daten nach JSON exportieren;
+      end fork
+    end fork
+    
+    if (Abmelden?) then (ja)
+      :Sitzung beenden;
+      stop
+    else (nein)
+      :Weitere Aktion auswählen;
+    endif
+  repeat while (Anwendung läuft)
+  
+else (nein)
+  if (Maximale Anmeldeversuche überschritten?) then (ja)
+    :Zugriff verweigern;
+  else (nein)
+    :Zeige Fehlermeldung;
+    :Neuer Anmeldeversuch;
+  endif
+endif
+
+stop
+
+@enduml

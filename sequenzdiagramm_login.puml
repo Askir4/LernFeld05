@@ -1,0 +1,58 @@
+@startuml Sequenzdiagramm_Login
+
+' Farbdefinitionen
+skinparam sequence {
+  ArrowColor #2c3e50
+  ActorBorderColor #2c3e50
+  LifeLineBorderColor #2c3e50
+  LifeLineBackgroundColor #A9DCDF
+  ParticipantBorderColor #2c3e50
+  ParticipantBackgroundColor #f0f8ff
+  ParticipantFontColor #333333
+}
+
+actor Benutzer
+participant "LoginApp" as Login
+participant "Authentifizierung" as Auth
+participant "Datenbank" as DB
+participant "AutohausApp" as App
+
+Benutzer -> Login: Benutzername eingeben
+Benutzer -> Login: Passwort eingeben
+Benutzer -> Login: Login-Button klicken
+
+activate Login
+Login -> Auth: authentifiziere_benutzer(name, passwort)
+activate Auth
+
+Auth -> DB: get_db_connection()
+activate DB
+DB --> Auth: connection
+Auth -> DB: SELECT benutzer
+DB --> Auth: Benutzerdaten
+Auth -> Auth: verify_password(stored_password, provided_password)
+Auth -> DB: release_db_connection(connection)
+deactivate DB
+
+alt Authentifizierung erfolgreich
+    Auth --> Login: True
+    Login -> Login: reset_login_attempts()
+    Login -> App: oeffne_hauptanwendung(benutzername)
+    activate App
+    App -> DB: get_db_connection()
+    activate DB
+    DB --> App: connection
+    App -> DB: SELECT fahrzeuge
+    DB --> App: Fahrzeugdaten
+    App -> DB: release_db_connection(connection)
+    deactivate DB
+    App --> Benutzer: Zeige Hauptanwendung
+else Authentifizierung fehlgeschlagen
+    Auth --> Login: False
+    Login -> Login: login_attempts += 1
+    Login -> Benutzer: Zeige Fehlermeldung
+end
+deactivate Auth
+deactivate Login
+
+@enduml
